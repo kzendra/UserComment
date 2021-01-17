@@ -18,9 +18,23 @@ namespace UserComment.Services
             _dbContext = dbContext;
         }
 
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int userId)
         {
-            var comment = await _dbContext.Comments.FindAsync(id);
+            var comment = await _dbContext.Comments.Where(x => x.UserId ==  userId).ToListAsync();
+            if (comment == null)
+            {
+                return NotFound();
+            }
+
+            _dbContext.Comments.RemoveRange(comment);
+            await _dbContext.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        public async Task<IActionResult> Delete(int userId, int id)
+        {
+            var comment = await _dbContext.Comments.Where(x => x.UserId == userId && x.Id == id).FirstOrDefaultAsync();
             if (comment == null)
             {
                 return NotFound();

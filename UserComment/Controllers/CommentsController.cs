@@ -61,10 +61,17 @@ namespace UserComment.Controllers
         }
 
         // DELETE: api/Comments/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteComment(int id)
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteComment(int userId)
         {
-            _commentBS.Delete(id);
+            return await _commentBS.Delete(userId);
+        }
+
+        // DELETE: api/Comments/5
+        [HttpDelete("{userId}/{id}")]
+        public async Task<IActionResult> DeleteComment(int userId, int id)
+        {
+            return await _commentBS.Delete(userId, id);
         }
 
     }

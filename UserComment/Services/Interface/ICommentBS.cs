@@ -15,5 +15,6 @@ namespace UserComment.Services.Interface
         Task<IActionResult> Put(int id, Comment comment);
         Task<ActionResult<Comment>> Save(Comment comment);
         Task<IActionResult> Delete(int id);
+        Task<IActionResult> Delete(int userId, int id);
     }
 }
