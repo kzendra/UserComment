@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserComment.DB;
 using UserComment.DB.Model;
+using UserComment.Services.Interface;
 
 namespace UserComment.Controllers
 {
@@ -14,32 +15,32 @@ namespace UserComment.Controllers
     [ApiController]
     public class CommentsController : ControllerBase
     {
-        private readonly Data _context;
+        private readonly ICommentBS _commentBS;
 
-        public CommentsController(Data context)
+        public CommentsController(ICommentBS commentBS)
         {
-            _context = context;
+            _commentBS = commentBS;
         }
 
         // GET: api/Comments
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Comment>>> GetComments()
         {
-            return await _context.Comments.ToListAsync();
+            return await _commentBS.Get();
+        }
+
+        // GET: api/Comments/5
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<IEnumerable<Comment>>> GetComments(int userId)
+        {
+            return await _commentBS.GetUserComment(userId);
         }
 
         // GET: api/Comments/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Comment>> GetComment(int id)
         {
-            var comment = await _context.Comments.FindAsync(id);
-
-            if (comment == null)
-            {
-                return NotFound();
-            }
-
-            return comment;
+            return await _commentBS.Get(id);
         }
 
         // PUT: api/Comments/5
@@ -47,30 +48,7 @@ namespace UserComment.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutComment(int id, Comment comment)
         {
-            if (id != comment.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(comment).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CommentExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return await _commentBS.Put(id, comment);
         }
 
         // POST: api/Comments
@@ -79,31 +57,15 @@ namespace UserComment.Controllers
         [Authorize]
         public async Task<ActionResult<Comment>> PostComment(Comment comment)
         {
-            _context.Comments.Add(comment);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
+            return await _commentBS.Save(comment);
         }
 
         // DELETE: api/Comments/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteComment(int id)
         {
-            var comment = await _context.Comments.FindAsync(id);
-            if (comment == null)
-            {
-                return NotFound();
-            }
-
-            _context.Comments.Remove(comment);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            _commentBS.Delete(id);
         }
 
-        private bool CommentExists(int id)
-        {
-            return _context.Comments.Any(e => e.Id == id);
-        }
     }
 }

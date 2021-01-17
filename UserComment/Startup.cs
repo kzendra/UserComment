@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using UserComment.BasicAuth;
 using UserComment.DB;
+using UserComment.Services;
+using UserComment.Services.Interface;
 
 namespace UserComment
 {
@@ -23,7 +25,11 @@ namespace UserComment
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<Data>(x => x.UseInMemoryDatabase("UserComment"));
+            services.AddMvc();
+            services.AddDbContext<Data>(x => x.UseSqlServer(Configuration.GetConnectionString("localHost")));
+            services.AddTransient<ICommentBS, CommentBS>();
+            services.AddTransient<IUserBS, UserBS>();
+            services.AddTransient<IUserService, UserService>();
             services.AddControllers();
             services.AddSwaggerGen(x =>
             {
@@ -57,7 +63,8 @@ namespace UserComment
 
             app.UseRouting();
 
-            //app.UseAuthorization();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
